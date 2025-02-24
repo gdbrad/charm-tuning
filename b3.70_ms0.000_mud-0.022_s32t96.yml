@@ -1,0 +1,6 @@
+#path options 
+cfg_path: /p/project1/exotichadrons/pederiva/6stout/beta_3.70/ms_0.000/mud_-0.022/s32t96/cnfg/
+run_path: /p/scratch/exotichadrons/charm-tuning
+xml_out_path: /p/scratch/exotichadrons/charm-tuning/xml-out
+ens_short: test
+ens_long: b3.30_ms-0.057_mud-0.129_s32t64-000

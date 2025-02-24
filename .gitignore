@@ -1,0 +1,5 @@
+xml-out/
+ini-spec/
+*.out 
+*.pyc
+*.out.xml

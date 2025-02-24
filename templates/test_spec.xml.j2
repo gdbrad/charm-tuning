@@ -1,0 +1,1605 @@
+<?xml version="1.0"?>
+<!-- Input file for `chroma` that will load in a configuration file and compute
+     a pion correlator from that. -->
+<chroma>
+  <!-- Load the configuration from a file. -->
+  <Cfg>
+    <cfg_type>SZINQIO</cfg_type>
+    <cfg_file>{{ cfg_path }}b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}.lime</cfg_file>
+    <!-- if the "parallel_io" parameter is not here and set to "true", 
+     one can get VBUFF errors on juwels -->
+    <parallel_io>true</parallel_io>
+
+  </Cfg>
+  <Param>
+    <nrow>{{ NL }} {{ NL }} {{ NL }} {{ NT }}</nrow>
+    <InlineMeasurements>
+
+    <!-- Create a single source. -->
+
+    <elem>
+      <Name>MAKE_SOURCE</Name>
+      <Frequency>1</Frequency>
+      <Param>
+        <version>6</version>
+        <Source>
+          <version>2</version>
+          <SourceType>SHELL_SOURCE</SourceType>
+          <j_decay>3</j_decay>
+          <t_srce>0 0 0 0</t_srce>
+
+          <SmearingParam>
+            <wvf_kind>GAUGE_INV_GAUSSIAN</wvf_kind>
+            <wvf_param>2.0</wvf_param>
+            <wvfIntPar>5</wvfIntPar>
+            <no_smear_dir>3</no_smear_dir>
+          </SmearingParam>
+         </Source>
+       </Param>
+       <NamedObject>
+         <gauge_id>default_gauge_field</gauge_id>
+         <source_id>sm_source.00</source_id>
+       </NamedObject>
+      </elem>
+
+
+      <!-- This will be the propagator of the charm quark. They only differ
+           in the masses specified. -->
+      <elem>
+        <Name>PROPAGATOR</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>10</version>
+          <quarkSpinType>FULL</quarkSpinType>
+          <obsvP>false</obsvP>
+          <FermionAction>
+            <FermAct>CLOVER</FermAct>
+            <Mass>0.25</Mass>
+            <clovCoeff>1.0</clovCoeff>
+            <FermState>
+              <Name>STOUT_FERM_STATE</Name>
+              <rho>0.11</rho>
+              <orthog_dir>-1</orthog_dir>
+              <n_smear>6</n_smear>
+              <FermionBC>
+                <FermBC>SIMPLE_FERMBC</FermBC>
+                <boundary>1 1 1 -1</boundary>
+              </FermionBC>
+            </FermState>
+          </FermionAction>
+
+
+
+         <InvertParam>
+            <invType>QUDA_MULTIGRID_CLOVER_INVERTER</invType>
+            
+            <!-- BJOO: The Clover Action Parameters -->
+
+            <CloverParams>
+              <Mass>0.25</Mass>
+              <clovCoeff>1.0</clovCoeff>
+              <AnisoParam>
+                <anisoP>false</anisoP>
+                <t_dir>3</t_dir>
+                <xi_0>1</xi_0>
+                <nu>1</nu>
+              </AnisoParam>
+            </CloverParams>
+
+            <!-- BJOO: The overall target residuum and Delta for mixed prec -->
+            <RsdTarget>1e-12</RsdTarget>
+            <Delta>1.0e-1</Delta>
+            
+            <!-- BJOO: Outer GCR is pipelined so set pipeline length -->
+            <Pipeline>4</Pipeline>
+            
+            <!-- BJOO: Maximum outer GCR iterations -->
+            <MaxIter>500</MaxIter>
+            
+            <!-- BJOO: Fudge factor of difference between Chroma and QUDA 
+            residual.
+            BJOO: Residua between Chroma and QUDA may differ due to 
+            preconditioning differences. If you use SEOhi_CLOVER rather 
+            than CLOVER FermAct in Chroma the difference should go away but 
+            that code may be a wee bit untested -->
+            <RsdToleranceFactor>8.0</RsdToleranceFactor>
+
+            <!-- BJOO: Whether you want antiperiodic BC-s in Time -->
+            <AntiPeriodicT>true</AntiPeriodicT>
+            
+            <!-- BJOO: Outer solver type and verbosity -->
+            <SolverType>GCR</SolverType>
+            <Verbose>false</Verbose>
+            
+            <!-- BJOO: Preconditioning style: if your FermAct is CLOVER
+            BJOO You *MUST* set this to <E2><80><98>true<E2><80><99>  (was ignored previously
+            BJOO: If your FermAct is SEOhi_CLOVER you *MUST* set
+            BJOO: it to false -->
+            <AsymmetricLinop>true</AsymmetricLinop>
+            
+            <!-- BJOO: Usual reconstruction and precision, axial gauge fix 
+            options -->
+            <CudaReconstruct>RECONS_12</CudaReconstruct>
+            <CudaSloppyPrecision>SINGLE</CudaSloppyPrecision>
+            <CudaSloppyReconstruct>RECONS_12</CudaSloppyReconstruct>
+            <AxialGaugeFix>false</AxialGaugeFix>
+            
+           
+            <!-- BJOO this should be deprecated -->
+            <AutotuneDslash>true</AutotuneDslash>
+            
+            <!-- BJOO: MG Specific options -->
+            <MULTIGRIDParams>
+              <Verbosity>true</Verbosity>
+              
+              <!-- BJOO: These precision and recons options relate only to 
+                   the outer level-->
+              <Precision>HALF</Precision>
+              <Reconstruct>RECONS_12</Reconstruct>
+              
+              <!-- BJOO: Blocking factors. The 4 4 4 4 is the fine grid to 
+              first coarse grid
+              BJOO: The. 2 2 2 2 is the first coarse grid to second coarse grid
+              -->
+              <Blocking>
+                <elem>2 2 2 2</elem>
+                <elem>2 2 2 2</elem>
+              </Blocking>
+
+              <!-- BJOO: Coarse solver types. You should use CA_GCR on the 
+              coarsest level
+              BJOO: Probably GCR otherwise -->
+              <CoarseSolverType>
+                <elem>GCR</elem>
+                <elem>CA_GCR</elem>
+              </CoarseSolverType>
+              
+              <!-- BJOO:  Residuals for the coarse solves.
+              BJOO: I matched the elements in the QUDA arrays but one of these
+              BJOO: must be ignored (probably the first one?). since in a 
+              3 level BJOO:  mg only has 2 coarse solves -->
+
+              <CoarseResidual>0.1 0.1 0.1</CoarseResidual>
+
+              <!-- BJOO: Max iterations
+              and relaxation factors  for the coarse solves with same 
+              caveat as for the residuals -->
+
+              <MaxCoarseIterations>12 12 8</MaxCoarseIterations>
+              <RelaxationOmegaMG>1.0 1.0 1.0</RelaxationOmegaMG>
+
+             
+              <!-- BJOO: Smoother types and tolerances: These can all be CA -->
+              <SmootherType>
+                <elem>CA_GCR</elem>
+                <elem>CA_GCR</elem>
+                <elem>CA_GCR</elem>
+              </SmootherType>
+              <SmootherTol>0.25 0.25 0.25</SmootherTol>
+              
+              <!-- BJOO: Number of Null vectors on levels that restrict to a 
+              coarser level -->
+              <NullVectors>24 32</NullVectors>
+              
+              <!--BJOO: Number of pre and post smoother applicatios at each 
+              appropriate level -->
+              <Pre-SmootherApplications>0 0</Pre-SmootherApplications>
+              <Post-SmootherApplications>8 8</Post-SmootherApplications>
+              
+              <!--BJOO: Solvers to use to solve for null-vectors, and their 
+              target residual and max iter counts -->
+              <SubspaceSolver>
+                <elem>CG</elem>
+                <elem>CG</elem>
+              </SubspaceSolver>
+              <RsdTargetSubspaceCreate>5e-06 5e-06</RsdTargetSubspaceCreate>
+              <MaxIterSubspaceCreate>500 500</MaxIterSubspaceCreate>
+              
+              <!-- BJOO Maximum iterations to use for subspace refreshment:
+              BJOO: Adjusting this to smaller values e.g. 20 can help save time
+              BJOO: during runs. I am not sure why these are so high I must<E2>
+<80><99>ve
+              BJOO: been trying to debug something. -->
+              <MaxIterSubspaceRefresh>500 500</MaxIterSubspaceRefresh>
+              
+              <!--BJOO:  Kyrlov space size for outer GCR -->
+              <OuterGCRNKrylov>20</OuterGCRNKrylov>
+              
+              <!-- BJOO: Krylov space size for the preconditioner -->
+              <PrecondGCRNKrylov>10</PrecondGCRNKrylov>
+              
+              <!-- BJOO: Should you generate the null-vectors? <E2><80><99>true
+<E2><80><99> is a 
+              good answer -->
+              <GenerateNullspace>true</GenerateNullspace>
+             
+              <!--BJOO: This checks that the multigrid setup satisfies some 
+              sanity checks 
+              BJOO: In an HMC Setting you can save some time by not running 
+              this -->
+              <CheckMultigridSetup>false</CheckMultigridSetup>
+              <!--BJOO: If you generate you should generate all levels (true 
+              is fine here) -->
+              <GenerateAllLevels>true</GenerateAllLevels>
+              
+              <!-- BJOO: Typical cyle we use: Kate calls it a K-cycle -->
+              <CycleType>MG_RECURSIVE</CycleType>
+              
+              <!-- BJOO: Additive SCHWARZ in the smoothers? or just default 
+              vaue -->
+              <SchwarzType>ADDITIVE_SCHWARZ</SchwarzType>
+              
+              <!-- BJOO: Some overrelaxation parameter for the smoother maybe?
+              -->
+              <RelaxationOmegaOuter>1.0</RelaxationOmegaOuter>
+              
+              <!-- BJOO: In a pinch you can do the setup on the CPUs -->
+             <SetupOnGPU>1 1</SetupOnGPU>
+            </MULTIGRIDParams>
+
+            <!-- BJOO: Give your MG setup/subspace a name so you can reuse it
+            BJOO: for multiple time steps. If the names subspace exists it 
+            will be BJOO: used. Otherwise it will be created and then used -->
+            <SubspaceID>mg_subspace</SubspaceID>
+
+            <!-- BJOO:  If you reach 500 outer iterations, blow away and 
+            rebuild your subspace -->
+            <ThresholdCount>500</ThresholdCount>
+            
+            <!-- BJOO Perform a chroma side check of the QUDA Solution. If 
+            you trust everything is robust, you can in principle turn this 
+            off. While you are worrid or if you are relying a lot on the 
+            RsdToleranceFactor, you may want to keep it on -->
+            
+            <SolutionCheckP>true</SolutionCheckP>
+          </InvertParam>
+
+
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <source_id>sm_source.00</source_id>
+          <prop_id>charm_sm_src_prop.00</prop_id>
+        </NamedObject>
+      </elem>
+
+
+
+
+      <!-- Smear the charm propagator at the sink. -->
+      <elem>
+        <Name>SINK_SMEAR</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>5</version>
+          <Sink>
+            <version>2</version>
+            <SinkType>POINT_SINK</SinkType>
+            <j_decay>3</j_decay>
+          </Sink>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <prop_id>charm_sm_src_prop.00</prop_id>
+          <smeared_prop_id>charm_sm_src_pt_sink_prop.00</smeared_prop_id>
+        </NamedObject>
+      </elem>
+
+      
+      <!-- Spectrum with charm quarks. -->
+      <elem>
+        <Name>HADRON_SPECTRUM</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>1</version>
+          <MesonP>true</MesonP>
+          <CurrentP>false</CurrentP>
+          <BaryonP>false</BaryonP>
+          <time_rev>false</time_rev>
+          <mom2_max>0</mom2_max>
+          <avg_equiv_mom>true</avg_equiv_mom>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <sink_pairs>
+            <elem>
+              <first_id>charm_sm_src_pt_sink_prop.00</first_id>
+              <second_id>charm_sm_src_pt_sink_prop.00</second_id>
+            </elem>
+          </sink_pairs>
+        </NamedObject>
+        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}charm-smpt.hi.00.xml</xml_file>
+      </elem>
+
+      <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>charm_sm_src_pt_sink_prop.00</object_id>
+        </NamedObject>
+      </elem>
+      
+
+
+      <elem>
+	<Name>SINK_SMEAR</Name>
+	<Frequency>1</Frequency>
+	<Param>
+          <version>5</version>
+          <Sink>
+            <version>2</version>
+            <SinkType>SHELL_SINK</SinkType>
+            <j_decay>3</j_decay>
+	    
+            <Displacement>
+              <version>1</version>
+              <DisplacementType>NONE</DisplacementType>
+            </Displacement>
+	    
+            <SmearingParam>
+              <wvf_kind>GAUGE_INV_GAUSSIAN</wvf_kind>
+              <wvf_param>2.0</wvf_param>
+              <wvfIntPar>5</wvfIntPar>
+              <no_smear_dir>3</no_smear_dir>
+            </SmearingParam>
+	    
+            <LinkSmearing>
+              <LinkSmearingType>APE_SMEAR</LinkSmearingType>
+              <link_smear_fact>0.1</link_smear_fact>
+              <link_smear_num>10</link_smear_num>
+              <no_smear_dir>3</no_smear_dir>
+            </LinkSmearing>
+          </Sink>
+	</Param>
+	<NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <prop_id>charm_sm_src_prop.00</prop_id>
+          <smeared_prop_id>charm_sm_src_sm_sink_prop.00</smeared_prop_id>
+	</NamedObject>
+      </elem>
+      
+
+      <elem>
+        <Name>HADRON_SPECTRUM</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>1</version>
+          <MesonP>true</MesonP>
+          <CurrentP>false</CurrentP>
+          <BaryonP>false</BaryonP>
+          <time_rev>false</time_rev>
+          <mom2_max>0</mom2_max>
+          <avg_equiv_mom>true</avg_equiv_mom>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <sink_pairs>
+            <elem>
+             <Name>smear-point_corr</Name>
+	      <first_id>charm_sm_src_sm_sink_prop.00</first_id>
+              <second_id>charm_sm_src_sm_sink_prop.00</second_id>
+            </elem>
+          </sink_pairs>
+        </NamedObject>
+        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}charm-smsm.hi.00.xml</xml_file>
+      </elem>
+
+      <elem>
+       <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>charm_sm_src_prop.00</object_id>
+        </NamedObject>
+      </elem>
+      
+
+      <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>charm_sm_src_sm_sink_prop.00</object_id>
+        </NamedObject>
+      </elem>
+ 
+
+     <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>sm_source.00</object_id>
+        </NamedObject>
+      </elem>
+    <!-- Create a single source. -->
+
+    <elem>
+      <Name>MAKE_SOURCE</Name>
+      <Frequency>1</Frequency>
+      <Param>
+        <version>6</version>
+        <Source>
+          <version>2</version>
+          <SourceType>SHELL_SOURCE</SourceType>
+          <j_decay>3</j_decay>
+          <t_srce>0 0 0 32</t_srce>
+
+          <SmearingParam>
+            <wvf_kind>GAUGE_INV_GAUSSIAN</wvf_kind>
+            <wvf_param>2.0</wvf_param>
+            <wvfIntPar>5</wvfIntPar>
+            <no_smear_dir>3</no_smear_dir>
+          </SmearingParam>
+         </Source>
+       </Param>
+       <NamedObject>
+         <gauge_id>default_gauge_field</gauge_id>
+         <source_id>sm_source.01</source_id>
+       </NamedObject>
+      </elem>
+
+ 
+
+
+      <!-- This will be the propagator of the charm quark. They only differ
+           in the masses specified. -->
+      <elem>
+        <Name>PROPAGATOR</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>10</version>
+          <quarkSpinType>FULL</quarkSpinType>
+          <obsvP>false</obsvP>
+          <FermionAction>
+            <FermAct>CLOVER</FermAct>
+            <Mass>0.25</Mass>
+            <clovCoeff>1.0</clovCoeff>
+            <FermState>
+              <Name>STOUT_FERM_STATE</Name>
+              <rho>0.11</rho>
+              <orthog_dir>-1</orthog_dir>
+              <n_smear>6</n_smear>
+              <FermionBC>
+                <FermBC>SIMPLE_FERMBC</FermBC>
+                <boundary>1 1 1 -1</boundary>
+              </FermionBC>
+            </FermState>
+          </FermionAction>
+
+
+
+         <InvertParam>
+            <invType>QUDA_MULTIGRID_CLOVER_INVERTER</invType>
+            
+            <!-- BJOO: The Clover Action Parameters -->
+
+            <CloverParams>
+              <Mass>0.25</Mass>
+              <clovCoeff>1.0</clovCoeff>
+              <AnisoParam>
+                <anisoP>false</anisoP>
+                <t_dir>3</t_dir>
+                <xi_0>1</xi_0>
+                <nu>1</nu>
+              </AnisoParam>
+            </CloverParams>
+
+            <!-- BJOO: The overall target residuum and Delta for mixed prec -->
+            <RsdTarget>1e-12</RsdTarget>
+            <Delta>1.0e-1</Delta>
+            
+            <!-- BJOO: Outer GCR is pipelined so set pipeline length -->
+            <Pipeline>4</Pipeline>
+            
+            <!-- BJOO: Maximum outer GCR iterations -->
+            <MaxIter>500</MaxIter>
+            
+            <!-- BJOO: Fudge factor of difference between Chroma and QUDA 
+            residual.
+            BJOO: Residua between Chroma and QUDA may differ due to 
+            preconditioning differences. If you use SEOhi_CLOVER rather 
+            than CLOVER FermAct in Chroma the difference should go away but 
+            that code may be a wee bit untested -->
+            <RsdToleranceFactor>8.0</RsdToleranceFactor>
+
+            <!-- BJOO: Whether you want antiperiodic BC-s in Time -->
+            <AntiPeriodicT>true</AntiPeriodicT>
+            
+            <!-- BJOO: Outer solver type and verbosity -->
+            <SolverType>GCR</SolverType>
+            <Verbose>false</Verbose>
+            
+            <!-- BJOO: Preconditioning style: if your FermAct is CLOVER
+            BJOO You *MUST* set this to <E2><80><98>true<E2><80><99>  (was ignored previously
+            BJOO: If your FermAct is SEOhi_CLOVER you *MUST* set
+            BJOO: it to false -->
+            <AsymmetricLinop>true</AsymmetricLinop>
+            
+            <!-- BJOO: Usual reconstruction and precision, axial gauge fix 
+            options -->
+            <CudaReconstruct>RECONS_12</CudaReconstruct>
+            <CudaSloppyPrecision>SINGLE</CudaSloppyPrecision>
+            <CudaSloppyReconstruct>RECONS_12</CudaSloppyReconstruct>
+            <AxialGaugeFix>false</AxialGaugeFix>
+            
+           
+            <!-- BJOO this should be deprecated -->
+            <AutotuneDslash>true</AutotuneDslash>
+            
+            <!-- BJOO: MG Specific options -->
+            <MULTIGRIDParams>
+              <Verbosity>true</Verbosity>
+              
+              <!-- BJOO: These precision and recons options relate only to 
+                   the outer level-->
+              <Precision>HALF</Precision>
+              <Reconstruct>RECONS_12</Reconstruct>
+              
+              <!-- BJOO: Blocking factors. The 4 4 4 4 is the fine grid to 
+              first coarse grid
+              BJOO: The. 2 2 2 2 is the first coarse grid to second coarse grid
+              -->
+              <Blocking>
+                <elem>2 2 2 2</elem>
+                <elem>2 2 2 2</elem>
+              </Blocking>
+
+              <!-- BJOO: Coarse solver types. You should use CA_GCR on the 
+              coarsest level
+              BJOO: Probably GCR otherwise -->
+              <CoarseSolverType>
+                <elem>GCR</elem>
+                <elem>CA_GCR</elem>
+              </CoarseSolverType>
+              
+              <!-- BJOO:  Residuals for the coarse solves.
+              BJOO: I matched the elements in the QUDA arrays but one of these
+              BJOO: must be ignored (probably the first one?). since in a 
+              3 level BJOO:  mg only has 2 coarse solves -->
+
+              <CoarseResidual>0.1 0.1 0.1</CoarseResidual>
+
+              <!-- BJOO: Max iterations
+              and relaxation factors  for the coarse solves with same 
+              caveat as for the residuals -->
+
+              <MaxCoarseIterations>12 12 8</MaxCoarseIterations>
+              <RelaxationOmegaMG>1.0 1.0 1.0</RelaxationOmegaMG>
+
+             
+              <!-- BJOO: Smoother types and tolerances: These can all be CA -->
+              <SmootherType>
+                <elem>CA_GCR</elem>
+                <elem>CA_GCR</elem>
+                <elem>CA_GCR</elem>
+              </SmootherType>
+              <SmootherTol>0.25 0.25 0.25</SmootherTol>
+              
+              <!-- BJOO: Number of Null vectors on levels that restrict to a 
+              coarser level -->
+              <NullVectors>24 32</NullVectors>
+              
+              <!--BJOO: Number of pre and post smoother applicatios at each 
+              appropriate level -->
+              <Pre-SmootherApplications>0 0</Pre-SmootherApplications>
+              <Post-SmootherApplications>8 8</Post-SmootherApplications>
+              
+              <!--BJOO: Solvers to use to solve for null-vectors, and their 
+              target residual and max iter counts -->
+              <SubspaceSolver>
+                <elem>CG</elem>
+                <elem>CG</elem>
+              </SubspaceSolver>
+              <RsdTargetSubspaceCreate>5e-06 5e-06</RsdTargetSubspaceCreate>
+              <MaxIterSubspaceCreate>500 500</MaxIterSubspaceCreate>
+              
+              <!-- BJOO Maximum iterations to use for subspace refreshment:
+              BJOO: Adjusting this to smaller values e.g. 20 can help save time
+              BJOO: during runs. I am not sure why these are so high I must<E2>
+<80><99>ve
+              BJOO: been trying to debug something. -->
+              <MaxIterSubspaceRefresh>500 500</MaxIterSubspaceRefresh>
+              
+              <!--BJOO:  Kyrlov space size for outer GCR -->
+              <OuterGCRNKrylov>20</OuterGCRNKrylov>
+              
+              <!-- BJOO: Krylov space size for the preconditioner -->
+              <PrecondGCRNKrylov>10</PrecondGCRNKrylov>
+              
+              <!-- BJOO: Should you generate the null-vectors? <E2><80><99>true
+<E2><80><99> is a 
+              good answer -->
+              <GenerateNullspace>true</GenerateNullspace>
+             
+              <!--BJOO: This checks that the multigrid setup satisfies some 
+              sanity checks 
+              BJOO: In an HMC Setting you can save some time by not running 
+              this -->
+              <CheckMultigridSetup>false</CheckMultigridSetup>
+              <!--BJOO: If you generate you should generate all levels (true 
+              is fine here) -->
+              <GenerateAllLevels>true</GenerateAllLevels>
+              
+              <!-- BJOO: Typical cyle we use: Kate calls it a K-cycle -->
+              <CycleType>MG_RECURSIVE</CycleType>
+              
+              <!-- BJOO: Additive SCHWARZ in the smoothers? or just default 
+              vaue -->
+              <SchwarzType>ADDITIVE_SCHWARZ</SchwarzType>
+              
+              <!-- BJOO: Some overrelaxation parameter for the smoother maybe?
+              -->
+              <RelaxationOmegaOuter>1.0</RelaxationOmegaOuter>
+              
+              <!-- BJOO: In a pinch you can do the setup on the CPUs -->
+             <SetupOnGPU>1 1</SetupOnGPU>
+            </MULTIGRIDParams>
+
+            <!-- BJOO: Give your MG setup/subspace a name so you can reuse it
+            BJOO: for multiple time steps. If the names subspace exists it 
+            will be BJOO: used. Otherwise it will be created and then used -->
+            <SubspaceID>mg_subspace</SubspaceID>
+
+            <!-- BJOO:  If you reach 500 outer iterations, blow away and 
+            rebuild your subspace -->
+            <ThresholdCount>500</ThresholdCount>
+            
+            <!-- BJOO Perform a chroma side check of the QUDA Solution. If 
+            you trust everything is robust, you can in principle turn this 
+            off. While you are worrid or if you are relying a lot on the 
+            RsdToleranceFactor, you may want to keep it on -->
+            
+            <SolutionCheckP>true</SolutionCheckP>
+          </InvertParam>
+
+
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <source_id>sm_source.01</source_id>
+          <prop_id>charm_sm_src_prop.01</prop_id>
+        </NamedObject>
+      </elem>
+
+
+
+
+      <!-- Smear the charm propagator at the sink. -->
+      <elem>
+        <Name>SINK_SMEAR</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>5</version>
+          <Sink>
+            <version>2</version>
+            <SinkType>POINT_SINK</SinkType>
+            <j_decay>3</j_decay>
+          </Sink>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <prop_id>charm_sm_src_prop.01</prop_id>
+          <smeared_prop_id>charm_sm_src_pt_sink_prop.01</smeared_prop_id>
+        </NamedObject>
+      </elem>
+
+      
+      <!-- Spectrum with charm quarks. -->
+      <elem>
+        <Name>HADRON_SPECTRUM</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>1</version>
+          <MesonP>true</MesonP>
+          <CurrentP>false</CurrentP>
+          <BaryonP>false</BaryonP>
+          <time_rev>false</time_rev>
+          <mom2_max>0</mom2_max>
+          <avg_equiv_mom>true</avg_equiv_mom>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <sink_pairs>
+            <elem>
+              <first_id>charm_sm_src_pt_sink_prop.01</first_id>
+              <second_id>charm_sm_src_pt_sink_prop.01</second_id>
+            </elem>
+          </sink_pairs>
+        </NamedObject>
+        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}charm-smpt.hi.01.xml</xml_file>
+      </elem>
+
+      <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>charm_sm_src_pt_sink_prop.01</object_id>
+        </NamedObject>
+      </elem>
+      
+
+
+      <elem>
+	<Name>SINK_SMEAR</Name>
+	<Frequency>1</Frequency>
+	<Param>
+          <version>5</version>
+          <Sink>
+            <version>2</version>
+            <SinkType>SHELL_SINK</SinkType>
+            <j_decay>3</j_decay>
+	    
+            <Displacement>
+              <version>1</version>
+              <DisplacementType>NONE</DisplacementType>
+            </Displacement>
+	    
+            <SmearingParam>
+              <wvf_kind>GAUGE_INV_GAUSSIAN</wvf_kind>
+              <wvf_param>2.0</wvf_param>
+              <wvfIntPar>5</wvfIntPar>
+              <no_smear_dir>3</no_smear_dir>
+            </SmearingParam>
+	    
+            <LinkSmearing>
+              <LinkSmearingType>APE_SMEAR</LinkSmearingType>
+              <link_smear_fact>0.1</link_smear_fact>
+              <link_smear_num>10</link_smear_num>
+              <no_smear_dir>3</no_smear_dir>
+            </LinkSmearing>
+          </Sink>
+	</Param>
+	<NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <prop_id>charm_sm_src_prop.01</prop_id>
+          <smeared_prop_id>charm_sm_src_sm_sink_prop.01</smeared_prop_id>
+	</NamedObject>
+      </elem>
+      
+
+      <elem>
+        <Name>HADRON_SPECTRUM</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>1</version>
+          <MesonP>true</MesonP>
+          <CurrentP>false</CurrentP>
+          <BaryonP>false</BaryonP>
+          <time_rev>false</time_rev>
+          <mom2_max>0</mom2_max>
+          <avg_equiv_mom>true</avg_equiv_mom>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <sink_pairs>
+            <elem>
+             <Name>smear-point_corr</Name>
+	      <first_id>charm_sm_src_sm_sink_prop.01</first_id>
+              <second_id>charm_sm_src_sm_sink_prop.01</second_id>
+            </elem>
+          </sink_pairs>
+        </NamedObject>
+        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}charm-smsm.hi.01.xml</xml_file>
+      </elem>
+
+      <elem>
+       <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>charm_sm_src_prop.01</object_id>
+        </NamedObject>
+      </elem>
+      
+
+      <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>charm_sm_src_sm_sink_prop.01</object_id>
+        </NamedObject>
+      </elem>
+ 
+
+     <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>sm_source.01</object_id>
+        </NamedObject>
+      </elem>
+    <!-- Create a single source. -->
+
+    <elem>
+      <Name>MAKE_SOURCE</Name>
+      <Frequency>1</Frequency>
+      <Param>
+        <version>6</version>
+        <Source>
+          <version>2</version>
+          <SourceType>SHELL_SOURCE</SourceType>
+          <j_decay>3</j_decay>
+          <t_srce>0 0 0 0</t_srce>
+
+          <SmearingParam>
+            <wvf_kind>GAUGE_INV_GAUSSIAN</wvf_kind>
+            <wvf_param>2.0</wvf_param>
+            <wvfIntPar>5</wvfIntPar>
+            <no_smear_dir>3</no_smear_dir>
+          </SmearingParam>
+         </Source>
+       </Param>
+       <NamedObject>
+         <gauge_id>default_gauge_field</gauge_id>
+         <source_id>sm_source.00</source_id>
+       </NamedObject>
+      </elem>
+
+ 
+
+
+      <!-- This will be the propagator of the charm quark. -->
+      <!--They only differ in the masses specified. -->
+      <elem>
+        <Name>PROPAGATOR</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>10</version>
+          <quarkSpinType>FULL</quarkSpinType>
+          <obsvP>false</obsvP>
+          <FermionAction>
+            <FermAct>CLOVER</FermAct>
+            <Mass>-0.013</Mass>
+            <clovCoeff>1.0</clovCoeff>
+            <FermState>
+              <Name>STOUT_FERM_STATE</Name>
+              <rho>0.11</rho>
+              <orthog_dir>-1</orthog_dir>
+              <n_smear>6</n_smear>
+              <FermionBC>
+                <FermBC>SIMPLE_FERMBC</FermBC>
+                <boundary>1 1 1 -1</boundary>
+              </FermionBC>
+            </FermState>
+          </FermionAction>
+
+         <InvertParam>
+            <invType>QUDA_MULTIGRID_CLOVER_INVERTER</invType>
+            
+            <!-- BJOO: The Clover Action Parameters -->
+
+            <CloverParams>
+              <Mass>-0.013</Mass>
+              <clovCoeff>1.0</clovCoeff>
+              <AnisoParam>
+                <anisoP>false</anisoP>
+                <t_dir>3</t_dir>
+                <xi_0>1</xi_0>
+                <nu>1</nu>
+              </AnisoParam>
+            </CloverParams>
+
+            <!-- BJOO: The overall target residuum and Delta for mixed prec -->
+            <RsdTarget>1e-12</RsdTarget>
+            <Delta>1.0e-1</Delta>
+            
+            <!-- BJOO: Outer GCR is pipelined so set pipeline length -->
+            <Pipeline>4</Pipeline>
+            
+            <!-- BJOO: Maximum outer GCR iterations -->
+            <MaxIter>500</MaxIter>
+            
+            <!-- BJOO: Fudge factor of difference between Chroma and QUDA 
+            residual.
+            BJOO: Residua between Chroma and QUDA may differ due to 
+            preconditioning differences. If you use SEOhi_CLOVER rather 
+            than CLOVER FermAct in Chroma the difference should go away but 
+            that code may be a wee bit untested -->
+            <RsdToleranceFactor>8.0</RsdToleranceFactor>
+
+            <!-- BJOO: Whether you want antiperiodic BC-s in Time -->
+            <AntiPeriodicT>true</AntiPeriodicT>
+            
+            <!-- BJOO: Outer solver type and verbosity -->
+            <SolverType>GCR</SolverType>
+            <Verbose>false</Verbose>
+            
+            <!-- BJOO: Preconditioning style: if your FermAct is CLOVER
+            BJOO You *MUST* set this to <E2><80><98>true<E2><80><99>  (was ignored previously
+            BJOO: If your FermAct is SEOhi_CLOVER you *MUST* set
+            BJOO: it to false -->
+            <AsymmetricLinop>true</AsymmetricLinop>
+            
+            <!-- BJOO: Usual reconstruction and precision, axial gauge fix 
+            options -->
+            <CudaReconstruct>RECONS_12</CudaReconstruct>
+            <CudaSloppyPrecision>SINGLE</CudaSloppyPrecision>
+            <CudaSloppyReconstruct>RECONS_12</CudaSloppyReconstruct>
+            <AxialGaugeFix>false</AxialGaugeFix>
+            
+           
+            <!-- BJOO this should be deprecated -->
+            <AutotuneDslash>true</AutotuneDslash>
+            
+            <!-- BJOO: MG Specific options -->
+            <MULTIGRIDParams>
+              <Verbosity>true</Verbosity>
+              
+              <!-- BJOO: These precision and recons options relate only to 
+                   the outer level-->
+              <Precision>HALF</Precision>
+              <Reconstruct>RECONS_12</Reconstruct>
+              
+              <!-- BJOO: Blocking factors. The 4 4 4 4 is the fine grid to 
+              first coarse grid
+              BJOO: The. 2 2 2 2 is the first coarse grid to second coarse grid
+              -->
+              <Blocking>
+                <elem>2 2 2 2</elem>
+                <elem>2 2 2 2</elem>
+              </Blocking>
+
+              <!-- BJOO: Coarse solver types. You should use CA_GCR on the 
+              coarsest level
+              BJOO: Probably GCR otherwise -->
+              <CoarseSolverType>
+                <elem>GCR</elem>
+                <elem>CA_GCR</elem>
+              </CoarseSolverType>
+              
+              <!-- BJOO:  Residuals for the coarse solves.
+              BJOO: I matched the elements in the QUDA arrays but one of these
+              BJOO: must be ignored (probably the first one?). since in a 
+              3 level BJOO:  mg only has 2 coarse solves -->
+
+              <CoarseResidual>0.1 0.1 0.1</CoarseResidual>
+
+              <!-- BJOO: Max iterations
+              and relaxation factors  for the coarse solves with same 
+              caveat as for the residuals -->
+
+              <MaxCoarseIterations>12 12 8</MaxCoarseIterations>
+              <RelaxationOmegaMG>1.0 1.0 1.0</RelaxationOmegaMG>
+
+             
+              <!-- BJOO: Smoother types and tolerances: These can all be CA -->
+              <SmootherType>
+                <elem>CA_GCR</elem>
+                <elem>CA_GCR</elem>
+                <elem>CA_GCR</elem>
+              </SmootherType>
+              <SmootherTol>0.25 0.25 0.25</SmootherTol>
+              
+              <!-- BJOO: Number of Null vectors on levels that restrict to a 
+              coarser level -->
+              <NullVectors>24 32</NullVectors>
+              
+              <!--BJOO: Number of pre and post smoother applicatios at each 
+              appropriate level -->
+              <Pre-SmootherApplications>0 0</Pre-SmootherApplications>
+              <Post-SmootherApplications>8 8</Post-SmootherApplications>
+              
+              <!--BJOO: Solvers to use to solve for null-vectors, and their 
+              target residual and max iter counts -->
+              <SubspaceSolver>
+                <elem>CG</elem>
+                <elem>CG</elem>
+              </SubspaceSolver>
+
+              <RsdTargetSubspaceCreate>5e-06 5e-06</RsdTargetSubspaceCreate>
+              <MaxIterSubspaceCreate>500 500</MaxIterSubspaceCreate>
+              
+              <!-- BJOO Maximum iterations to use for subspace refreshment:
+              BJOO: Adjusting this to smaller values e.g. 20 can help save time
+              BJOO: during runs. I am not sure why these are so high I must<E2>
+<80><99>ve
+              BJOO: been trying to debug something. -->
+              <MaxIterSubspaceRefresh>500 500</MaxIterSubspaceRefresh>
+              
+              <!--BJOO:  Kyrlov space size for outer GCR -->
+              <OuterGCRNKrylov>20</OuterGCRNKrylov>
+              
+              <!-- BJOO: Krylov space size for the preconditioner -->
+              <PrecondGCRNKrylov>10</PrecondGCRNKrylov>
+              
+              <!-- BJOO: Should you generate the null-vectors? <E2><80><99>true
+<E2><80><99> is a 
+              good answer -->
+              <GenerateNullspace>true</GenerateNullspace>
+             
+              <!--BJOO: This checks that the multigrid setup satisfies some 
+              sanity checks 
+              BJOO: In an HMC Setting you can save some time by not running 
+              this -->
+              <CheckMultigridSetup>false</CheckMultigridSetup>
+              <!--BJOO: If you generate you should generate all levels (true 
+              is fine here) -->
+              <GenerateAllLevels>true</GenerateAllLevels>
+              
+              <!-- BJOO: Typical cyle we use: Kate calls it a K-cycle -->
+              <CycleType>MG_RECURSIVE</CycleType>
+              
+              <!-- BJOO: Additive SCHWARZ in the smoothers? or just default 
+              vaue -->
+              <SchwarzType>ADDITIVE_SCHWARZ</SchwarzType>
+              
+              <!-- BJOO: Some overrelaxation parameter for the smoother maybe?
+              -->
+              <RelaxationOmegaOuter>1.0</RelaxationOmegaOuter>
+              
+              <!-- BJOO: In a pinch you can do the setup on the CPUs -->
+             <SetupOnGPU>1 1</SetupOnGPU>
+            </MULTIGRIDParams>
+
+            <!-- BJOO: Give your MG setup/subspace a name so you can reuse it
+            BJOO: for multiple time steps. If the names subspace exists it 
+            will be BJOO: used. Otherwise it will be created and then used -->
+            <SubspaceID>mg_subspace</SubspaceID>
+
+            <!-- BJOO:  If you reach 500 outer iterations, blow away and 
+            rebuild your subspace -->
+            <ThresholdCount>500</ThresholdCount>
+            
+            <!-- BJOO Perform a chroma side check of the QUDA Solution. If 
+            you trust everything is robust, you can in principle turn this 
+            off. While you are worrid or if you are relying a lot on the 
+            RsdToleranceFactor, you may want to keep it on -->
+            
+            <SolutionCheckP>true</SolutionCheckP>
+          </InvertParam>
+
+
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <source_id>sm_source.00</source_id>
+          <prop_id>strange_sm_src_prop.00</prop_id>
+        </NamedObject>
+      </elem>
+
+
+      <!-- Smear the light propagator at the sink. -->
+      <elem>
+        <Name>SINK_SMEAR</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>5</version>
+          <Sink>
+            <version>2</version>
+            <SinkType>POINT_SINK</SinkType>
+            <j_decay>3</j_decay>
+          </Sink>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <prop_id>strange_sm_src_prop.00</prop_id>
+          <smeared_prop_id>strange_sm_src_pt_sink_prop.00</smeared_prop_id>
+        </NamedObject>
+      </elem>
+
+      <!-- Spectrum with strange quarks. -->
+
+      <elem>
+        <Name>HADRON_SPECTRUM</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>1</version>
+          <MesonP>true</MesonP>
+          <CurrentP>false</CurrentP>
+          <BaryonP>false</BaryonP>
+          <time_rev>false</time_rev>
+          <mom2_max>0</mom2_max>
+          <avg_equiv_mom>true</avg_equiv_mom>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <sink_pairs>
+            <elem>
+             <Name>smear-point_corr</Name>
+	      <first_id>strange_sm_src_pt_sink_prop.00</first_id>
+              <second_id>strange_sm_src_pt_sink_prop.00</second_id>
+            </elem>
+          </sink_pairs>
+        </NamedObject>
+        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}.strange-smpt.hi.00.xml</xml_file>
+      </elem>
+
+
+      <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>strange_sm_src_pt_sink_prop.00</object_id>
+        </NamedObject>
+      </elem>
+
+
+
+      <elem>
+	<Name>SINK_SMEAR</Name>
+	<Frequency>1</Frequency>
+	<Param>
+          <version>5</version>
+          <Sink>
+            <version>2</version>
+            <SinkType>SHELL_SINK</SinkType>
+            <j_decay>3</j_decay>
+	    
+            <Displacement>
+              <version>1</version>
+              <DisplacementType>NONE</DisplacementType>
+            </Displacement>
+	    
+            <SmearingParam>
+              <wvf_kind>GAUGE_INV_GAUSSIAN</wvf_kind>
+              <wvf_param>2.0</wvf_param>
+              <wvfIntPar>5</wvfIntPar>
+              <no_smear_dir>3</no_smear_dir>
+            </SmearingParam>
+	    
+            <LinkSmearing>
+              <LinkSmearingType>APE_SMEAR</LinkSmearingType>
+              <link_smear_fact>0.1</link_smear_fact>
+              <link_smear_num>10</link_smear_num>
+              <no_smear_dir>3</no_smear_dir>
+            </LinkSmearing>
+          </Sink>
+	</Param>
+	<NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <prop_id>strange_sm_src_prop.00</prop_id>
+          <smeared_prop_id>strange_sm_src_sm_sink_prop.00</smeared_prop_id>
+	</NamedObject>
+      </elem>
+      
+
+      <elem>
+        <Name>HADRON_SPECTRUM</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>1</version>
+          <MesonP>true</MesonP>
+          <CurrentP>false</CurrentP>
+          <BaryonP>false</BaryonP>
+          <time_rev>false</time_rev>
+          <mom2_max>0</mom2_max>
+          <avg_equiv_mom>true</avg_equiv_mom>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <sink_pairs>
+            <elem>
+             <Name>smear-point_corr</Name>
+	      <first_id>strange_sm_src_sm_sink_prop.00</first_id>
+              <second_id>strange_sm_src_sm_sink_prop.00</second_id>
+            </elem>
+          </sink_pairs>
+        </NamedObject>
+       <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}.strange-smsm.hi.00.xml</xml_file>
+      </elem>
+
+      <elem>
+       <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>strange_sm_src_prop.00</object_id>
+        </NamedObject>
+      </elem>
+      
+      
+      <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>strange_sm_src_sm_sink_prop.00</object_id>
+        </NamedObject>
+      </elem>
+      
+
+
+
+
+
+
+
+     <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>sm_source.00</object_id>
+        </NamedObject>
+      </elem>
+    <!-- Create a single source. -->
+
+    <elem>
+      <Name>MAKE_SOURCE</Name>
+      <Frequency>1</Frequency>
+      <Param>
+        <version>6</version>
+        <Source>
+          <version>2</version>
+          <SourceType>SHELL_SOURCE</SourceType>
+          <j_decay>3</j_decay>
+          <t_srce>0 0 0 32</t_srce>
+
+          <SmearingParam>
+            <wvf_kind>GAUGE_INV_GAUSSIAN</wvf_kind>
+            <wvf_param>2.0</wvf_param>
+            <wvfIntPar>5</wvfIntPar>
+            <no_smear_dir>3</no_smear_dir>
+          </SmearingParam>
+         </Source>
+       </Param>
+       <NamedObject>
+         <gauge_id>default_gauge_field</gauge_id>
+         <source_id>sm_source.01</source_id>
+       </NamedObject>
+      </elem>
+
+ 
+
+
+      <!-- This will be the propagator of the charm quark. -->
+      <!--They only differ in the masses specified. -->
+      <elem>
+        <Name>PROPAGATOR</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>10</version>
+          <quarkSpinType>FULL</quarkSpinType>
+          <obsvP>false</obsvP>
+          <FermionAction>
+            <FermAct>CLOVER</FermAct>
+            <Mass>0.0</Mass>
+            <clovCoeff>1.0</clovCoeff>
+            <FermState>
+              <Name>STOUT_FERM_STATE</Name>
+              <rho>0.11</rho>
+              <orthog_dir>-1</orthog_dir>
+              <n_smear>6</n_smear>
+              <FermionBC>
+                <FermBC>SIMPLE_FERMBC</FermBC>
+                <boundary>1 1 1 -1</boundary>
+              </FermionBC>
+            </FermState>
+          </FermionAction>
+
+         <InvertParam>
+            <invType>QUDA_MULTIGRID_CLOVER_INVERTER</invType>
+            
+            <!-- BJOO: The Clover Action Parameters -->
+
+            <CloverParams>
+              <Mass>0.0</Mass>
+              <clovCoeff>1.0</clovCoeff>
+              <AnisoParam>
+                <anisoP>false</anisoP>
+                <t_dir>3</t_dir>
+                <xi_0>1</xi_0>
+                <nu>1</nu>
+              </AnisoParam>
+            </CloverParams>
+
+            <!-- BJOO: The overall target residuum and Delta for mixed prec -->
+            <RsdTarget>1e-12</RsdTarget>
+            <Delta>1.0e-1</Delta>
+            
+            <!-- BJOO: Outer GCR is pipelined so set pipeline length -->
+            <Pipeline>4</Pipeline>
+            
+            <!-- BJOO: Maximum outer GCR iterations -->
+            <MaxIter>500</MaxIter>
+            
+            <!-- BJOO: Fudge factor of difference between Chroma and QUDA 
+            residual.
+            BJOO: Residua between Chroma and QUDA may differ due to 
+            preconditioning differences. If you use SEOhi_CLOVER rather 
+            than CLOVER FermAct in Chroma the difference should go away but 
+            that code may be a wee bit untested -->
+            <RsdToleranceFactor>8.0</RsdToleranceFactor>
+
+            <!-- BJOO: Whether you want antiperiodic BC-s in Time -->
+            <AntiPeriodicT>true</AntiPeriodicT>
+            
+            <!-- BJOO: Outer solver type and verbosity -->
+            <SolverType>GCR</SolverType>
+            <Verbose>false</Verbose>
+            
+            <!-- BJOO: Preconditioning style: if your FermAct is CLOVER
+            BJOO You *MUST* set this to <E2><80><98>true<E2><80><99>  (was ignored previously
+            BJOO: If your FermAct is SEOhi_CLOVER you *MUST* set
+            BJOO: it to false -->
+            <AsymmetricLinop>true</AsymmetricLinop>
+            
+            <!-- BJOO: Usual reconstruction and precision, axial gauge fix 
+            options -->
+            <CudaReconstruct>RECONS_12</CudaReconstruct>
+            <CudaSloppyPrecision>SINGLE</CudaSloppyPrecision>
+            <CudaSloppyReconstruct>RECONS_12</CudaSloppyReconstruct>
+            <AxialGaugeFix>false</AxialGaugeFix>
+            
+           
+            <!-- BJOO this should be deprecated -->
+            <AutotuneDslash>true</AutotuneDslash>
+            
+            <!-- BJOO: MG Specific options -->
+            <MULTIGRIDParams>
+              <Verbosity>true</Verbosity>
+              
+              <!-- BJOO: These precision and recons options relate only to 
+                   the outer level-->
+              <Precision>HALF</Precision>
+              <Reconstruct>RECONS_12</Reconstruct>
+              
+              <!-- BJOO: Blocking factors. The 4 4 4 4 is the fine grid to 
+              first coarse grid
+              BJOO: The. 2 2 2 2 is the first coarse grid to second coarse grid
+              -->
+              <Blocking>
+                <elem>2 2 2 2</elem>
+                <elem>2 2 2 2</elem>
+              </Blocking>
+
+              <!-- BJOO: Coarse solver types. You should use CA_GCR on the 
+              coarsest level
+              BJOO: Probably GCR otherwise -->
+              <CoarseSolverType>
+                <elem>GCR</elem>
+                <elem>CA_GCR</elem>
+              </CoarseSolverType>
+              
+              <!-- BJOO:  Residuals for the coarse solves.
+              BJOO: I matched the elements in the QUDA arrays but one of these
+              BJOO: must be ignored (probably the first one?). since in a 
+              3 level BJOO:  mg only has 2 coarse solves -->
+
+              <CoarseResidual>0.1 0.1 0.1</CoarseResidual>
+
+              <!-- BJOO: Max iterations
+              and relaxation factors  for the coarse solves with same 
+              caveat as for the residuals -->
+
+              <MaxCoarseIterations>12 12 8</MaxCoarseIterations>
+              <RelaxationOmegaMG>1.0 1.0 1.0</RelaxationOmegaMG>
+
+             
+              <!-- BJOO: Smoother types and tolerances: These can all be CA -->
+              <SmootherType>
+                <elem>CA_GCR</elem>
+                <elem>CA_GCR</elem>
+                <elem>CA_GCR</elem>
+              </SmootherType>
+              <SmootherTol>0.25 0.25 0.25</SmootherTol>
+              
+              <!-- BJOO: Number of Null vectors on levels that restrict to a 
+              coarser level -->
+              <NullVectors>24 32</NullVectors>
+              
+              <!--BJOO: Number of pre and post smoother applicatios at each 
+              appropriate level -->
+              <Pre-SmootherApplications>0 0</Pre-SmootherApplications>
+              <Post-SmootherApplications>8 8</Post-SmootherApplications>
+              
+              <!--BJOO: Solvers to use to solve for null-vectors, and their 
+              target residual and max iter counts -->
+              <SubspaceSolver>
+                <elem>CG</elem>
+                <elem>CG</elem>
+              </SubspaceSolver>
+
+              <RsdTargetSubspaceCreate>5e-06 5e-06</RsdTargetSubspaceCreate>
+              <MaxIterSubspaceCreate>500 500</MaxIterSubspaceCreate>
+              
+              <!-- BJOO Maximum iterations to use for subspace refreshment:
+              BJOO: Adjusting this to smaller values e.g. 20 can help save time
+              BJOO: during runs. I am not sure why these are so high I must<E2>
+<80><99>ve
+              BJOO: been trying to debug something. -->
+              <MaxIterSubspaceRefresh>500 500</MaxIterSubspaceRefresh>
+              
+              <!--BJOO:  Kyrlov space size for outer GCR -->
+              <OuterGCRNKrylov>20</OuterGCRNKrylov>
+              
+              <!-- BJOO: Krylov space size for the preconditioner -->
+              <PrecondGCRNKrylov>10</PrecondGCRNKrylov>
+              
+              <!-- BJOO: Should you generate the null-vectors? <E2><80><99>true
+<E2><80><99> is a 
+              good answer -->
+              <GenerateNullspace>true</GenerateNullspace>
+             
+              <!--BJOO: This checks that the multigrid setup satisfies some 
+              sanity checks 
+              BJOO: In an HMC Setting you can save some time by not running 
+              this -->
+              <CheckMultigridSetup>false</CheckMultigridSetup>
+              <!--BJOO: If you generate you should generate all levels (true 
+              is fine here) -->
+              <GenerateAllLevels>true</GenerateAllLevels>
+              
+              <!-- BJOO: Typical cyle we use: Kate calls it a K-cycle -->
+              <CycleType>MG_RECURSIVE</CycleType>
+              
+              <!-- BJOO: Additive SCHWARZ in the smoothers? or just default 
+              vaue -->
+              <SchwarzType>ADDITIVE_SCHWARZ</SchwarzType>
+              
+              <!-- BJOO: Some overrelaxation parameter for the smoother maybe?
+              -->
+              <RelaxationOmegaOuter>1.0</RelaxationOmegaOuter>
+              
+              <!-- BJOO: In a pinch you can do the setup on the CPUs -->
+             <SetupOnGPU>1 1</SetupOnGPU>
+            </MULTIGRIDParams>
+
+            <!-- BJOO: Give your MG setup/subspace a name so you can reuse it
+            BJOO: for multiple time steps. If the names subspace exists it 
+            will be BJOO: used. Otherwise it will be created and then used -->
+            <SubspaceID>mg_subspace</SubspaceID>
+
+            <!-- BJOO:  If you reach 500 outer iterations, blow away and 
+            rebuild your subspace -->
+            <ThresholdCount>500</ThresholdCount>
+            
+            <!-- BJOO Perform a chroma side check of the QUDA Solution. If 
+            you trust everything is robust, you can in principle turn this 
+            off. While you are worrid or if you are relying a lot on the 
+            RsdToleranceFactor, you may want to keep it on -->
+            
+            <SolutionCheckP>true</SolutionCheckP>
+          </InvertParam>
+
+
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <source_id>sm_source.01</source_id>
+          <prop_id>strange_sm_src_prop.01</prop_id>
+        </NamedObject>
+      </elem>
+
+
+      <!-- Smear the light propagator at the sink. -->
+      <elem>
+        <Name>SINK_SMEAR</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>5</version>
+          <Sink>
+            <version>2</version>
+            <SinkType>POINT_SINK</SinkType>
+            <j_decay>3</j_decay>
+          </Sink>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <prop_id>strange_sm_src_prop.01</prop_id>
+          <smeared_prop_id>strange_sm_src_pt_sink_prop.01</smeared_prop_id>
+        </NamedObject>
+      </elem>
+
+      <!-- Spectrum with strange quarks. -->
+
+      <elem>
+        <Name>HADRON_SPECTRUM</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>1</version>
+          <MesonP>true</MesonP>
+          <CurrentP>false</CurrentP>
+          <BaryonP>false</BaryonP>
+          <time_rev>false</time_rev>
+          <mom2_max>0</mom2_max>
+          <avg_equiv_mom>true</avg_equiv_mom>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <sink_pairs>
+            <elem>
+             <Name>smear-point_corr</Name>
+	      <first_id>strange_sm_src_pt_sink_prop.01</first_id>
+              <second_id>strange_sm_src_pt_sink_prop.01</second_id>
+            </elem>
+          </sink_pairs>
+        </NamedObject>
+        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}strange-smpt.hi.01.xml</xml_file>
+      </elem>
+
+
+      <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>strange_sm_src_pt_sink_prop.01</object_id>
+        </NamedObject>
+      </elem>
+
+
+
+      <elem>
+	<Name>SINK_SMEAR</Name>
+	<Frequency>1</Frequency>
+	<Param>
+          <version>5</version>
+          <Sink>
+            <version>2</version>
+            <SinkType>SHELL_SINK</SinkType>
+            <j_decay>3</j_decay>
+	    
+            <Displacement>
+              <version>1</version>
+              <DisplacementType>NONE</DisplacementType>
+            </Displacement>
+	    
+            <SmearingParam>
+              <wvf_kind>GAUGE_INV_GAUSSIAN</wvf_kind>
+              <wvf_param>2.0</wvf_param>
+              <wvfIntPar>5</wvfIntPar>
+              <no_smear_dir>3</no_smear_dir>
+            </SmearingParam>
+	    
+            <LinkSmearing>
+              <LinkSmearingType>APE_SMEAR</LinkSmearingType>
+              <link_smear_fact>0.1</link_smear_fact>
+              <link_smear_num>10</link_smear_num>
+              <no_smear_dir>3</no_smear_dir>
+            </LinkSmearing>
+          </Sink>
+	</Param>
+	<NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <prop_id>strange_sm_src_prop.01</prop_id>
+          <smeared_prop_id>strange_sm_src_sm_sink_prop.01</smeared_prop_id>
+	</NamedObject>
+      </elem>
+      
+
+      <elem>
+        <Name>HADRON_SPECTRUM</Name>
+        <Frequency>1</Frequency>
+        <Param>
+          <version>1</version>
+          <MesonP>true</MesonP>
+          <CurrentP>false</CurrentP>
+          <BaryonP>false</BaryonP>
+          <time_rev>false</time_rev>
+          <mom2_max>0</mom2_max>
+          <avg_equiv_mom>true</avg_equiv_mom>
+        </Param>
+        <NamedObject>
+          <gauge_id>default_gauge_field</gauge_id>
+          <sink_pairs>
+            <elem>
+             <Name>smear-point_corr</Name>
+	      <first_id>strange_sm_src_sm_sink_prop.01</first_id>
+              <second_id>strange_sm_src_sm_sink_prop.01</second_id>
+            </elem>
+          </sink_pairs>
+        </NamedObject>
+        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}.strange-smsm.hi.01.xml</xml_file>
+      </elem>
+
+      <elem>
+       <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>strange_sm_src_prop.01</object_id>
+        </NamedObject>
+      </elem>
+      
+      
+      <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>strange_sm_src_sm_sink_prop.01</object_id>
+        </NamedObject>
+      </elem>
+
+     <elem>
+        <Name>ERASE_NAMED_OBJECT</Name>
+        <Frequency>1</Frequency>
+        <NamedObject>
+          <object_id>sm_source.01</object_id>
+        </NamedObject>
+      </elem>
+    </InlineMeasurements>
+  </Param>
+</chroma>
