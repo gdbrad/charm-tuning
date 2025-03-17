@@ -12,7 +12,7 @@ TEMPLATE = os.path.join(FDIR, 'templates')
 class TaskHandler:
     def __init__(self, env):
         self.templates = {
-            'spec': env.get_template('test_spec.xml.j2'),
+            'spec': env.get_template('spec_Ds_multi.xml.j2'),
             'chroma_spec': env.get_template('test_spec.sh.j2')
         }
 

@@ -3,3 +3,9 @@ ini-spec/
 *.out 
 *.pyc
 *.out.xml
+*.h5 
+correlator_plots
+ini-mix/
+ini-multi/
+D_s-h5/
+plots

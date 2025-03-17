@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- Input file for `chroma` that will load in a configuration file and compute
-     a pion correlator from that. -->
+     a D_s correlator from that. -->
 <chroma>
   <!-- Load the configuration from a file. -->
   <Cfg>
@@ -285,31 +285,6 @@
         </NamedObject>
       </elem>
 
-      
-      <!-- Spectrum with charm quarks. -->
-      <elem>
-        <Name>HADRON_SPECTRUM</Name>
-        <Frequency>1</Frequency>
-        <Param>
-          <version>1</version>
-          <MesonP>true</MesonP>
-          <CurrentP>false</CurrentP>
-          <BaryonP>false</BaryonP>
-          <time_rev>false</time_rev>
-          <mom2_max>0</mom2_max>
-          <avg_equiv_mom>true</avg_equiv_mom>
-        </Param>
-        <NamedObject>
-          <gauge_id>default_gauge_field</gauge_id>
-          <sink_pairs>
-            <elem>
-              <first_id>charm_sm_src_pt_sink_prop.00</first_id>
-              <second_id>charm_sm_src_pt_sink_prop.00</second_id>
-            </elem>
-          </sink_pairs>
-        </NamedObject>
-        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}charm-smpt.hi.00.xml</xml_file>
-      </elem>
 
       <elem>
         <Name>ERASE_NAMED_OBJECT</Name>
@@ -356,32 +331,6 @@
           <prop_id>charm_sm_src_prop.00</prop_id>
           <smeared_prop_id>charm_sm_src_sm_sink_prop.00</smeared_prop_id>
 	</NamedObject>
-      </elem>
-      
-
-      <elem>
-        <Name>HADRON_SPECTRUM</Name>
-        <Frequency>1</Frequency>
-        <Param>
-          <version>1</version>
-          <MesonP>true</MesonP>
-          <CurrentP>false</CurrentP>
-          <BaryonP>false</BaryonP>
-          <time_rev>false</time_rev>
-          <mom2_max>0</mom2_max>
-          <avg_equiv_mom>true</avg_equiv_mom>
-        </Param>
-        <NamedObject>
-          <gauge_id>default_gauge_field</gauge_id>
-          <sink_pairs>
-            <elem>
-             <Name>smear-point_corr</Name>
-	      <first_id>charm_sm_src_sm_sink_prop.00</first_id>
-              <second_id>charm_sm_src_sm_sink_prop.00</second_id>
-            </elem>
-          </sink_pairs>
-        </NamedObject>
-        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}charm-smsm.hi.00.xml</xml_file>
       </elem>
 
       <elem>
@@ -681,33 +630,6 @@
         </NamedObject>
       </elem>
 
-	<!-- Spectrum with mixed strang e and charm quarks -->
-
-      
-      <!-- Spectrum with charm quarks. -->
-      <elem>
-        <Name>HADRON_SPECTRUM</Name>
-        <Frequency>1</Frequency>
-        <Param>
-          <version>1</version>
-          <MesonP>true</MesonP>
-          <CurrentP>false</CurrentP>
-          <BaryonP>false</BaryonP>
-          <time_rev>false</time_rev>
-          <mom2_max>0</mom2_max>
-          <avg_equiv_mom>true</avg_equiv_mom>
-        </Param>
-        <NamedObject>
-          <gauge_id>default_gauge_field</gauge_id>
-          <sink_pairs>
-            <elem>
-              <first_id>charm_sm_src_pt_sink_prop.01</first_id>
-              <second_id>charm_sm_src_pt_sink_prop.01</second_id>
-            </elem>
-          </sink_pairs>
-        </NamedObject>
-        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}charm-smpt.hi.01.xml</xml_file>
-      </elem>
 
       <elem>
         <Name>ERASE_NAMED_OBJECT</Name>
@@ -755,32 +677,7 @@
           <smeared_prop_id>charm_sm_src_sm_sink_prop.01</smeared_prop_id>
 	</NamedObject>
       </elem>
-      
-
-      <elem>
-        <Name>HADRON_SPECTRUM</Name>
-        <Frequency>1</Frequency>
-        <Param>
-          <version>1</version>
-          <MesonP>true</MesonP>
-          <CurrentP>false</CurrentP>
-          <BaryonP>false</BaryonP>
-          <time_rev>false</time_rev>
-          <mom2_max>0</mom2_max>
-          <avg_equiv_mom>true</avg_equiv_mom>
-        </Param>
-        <NamedObject>
-          <gauge_id>default_gauge_field</gauge_id>
-          <sink_pairs>
-            <elem>
-             <Name>smear-point_corr</Name>
-	      <first_id>charm_sm_src_sm_sink_prop.01</first_id>
-              <second_id>charm_sm_src_sm_sink_prop.01</second_id>
-            </elem>
-          </sink_pairs>
-        </NamedObject>
-        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}charm-smsm.hi.01.xml</xml_file>
-      </elem>
+    
 
       <elem>
        <Name>ERASE_NAMED_OBJECT</Name>
@@ -1076,7 +973,7 @@
         </NamedObject>
       </elem>
 
-      <!-- Spectrum with strange quarks. -->
+      <!-- Spectrum with mixed strange and charm quarks. -->
 
       <elem>
         <Name>HADRON_SPECTRUM</Name>
@@ -1096,11 +993,11 @@
             <elem>
              <Name>smear-point_corr</Name>
 	      <first_id>strange_sm_src_pt_sink_prop.00</first_id>
-              <second_id>strange_sm_src_pt_sink_prop.00</second_id>
+              <second_id>charm_sm_src_pt_sink_prop.00</second_id>
             </elem>
           </sink_pairs>
         </NamedObject>
-        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}.strange-smpt.hi.00.xml</xml_file>
+        <xml_file>{{ xml_out_path }}/corr.D_s.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}.D_s-smpt.hi.00.xml</xml_file>
       </elem>
 
 
@@ -1169,12 +1066,12 @@
           <sink_pairs>
             <elem>
              <Name>smear-point_corr</Name>
-	      <first_id>strange_sm_src_sm_sink_prop.00</first_id>
-              <second_id>strange_sm_src_sm_sink_prop.00</second_id>
+	      <first_id>strage_sm_src_sm_sink_prop.00</first_id>
+              <second_id>charm_sm_src_sm_sink_prop.00</second_id>
             </elem>
           </sink_pairs>
         </NamedObject>
-       <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}.strange-smsm.hi.00.xml</xml_file>
+       <xml_file>{{ xml_out_path }}/corr.D_s.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}.D_s-smsm.hi.00.xml</xml_file>
       </elem>
 
       <elem>
@@ -1194,13 +1091,6 @@
         </NamedObject>
       </elem>
       
-
-
-
-
-
-
-
      <elem>
         <Name>ERASE_NAMED_OBJECT</Name>
         <Frequency>1</Frequency>
@@ -1497,11 +1387,11 @@
             <elem>
              <Name>smear-point_corr</Name>
 	      <first_id>strange_sm_src_pt_sink_prop.01</first_id>
-              <second_id>strange_sm_src_pt_sink_prop.01</second_id>
+              <second_id>charm_sm_src_pt_sink_prop.01</second_id>
             </elem>
           </sink_pairs>
         </NamedObject>
-        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}strange-smpt.hi.01.xml</xml_file>
+        <xml_file>{{ xml_out_path }}/corr.D_s.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}_D_s-smpt.hi.01.xml</xml_file>
       </elem>
 
 
@@ -1571,11 +1461,11 @@
             <elem>
              <Name>smear-point_corr</Name>
 	      <first_id>strange_sm_src_sm_sink_prop.01</first_id>
-              <second_id>strange_sm_src_sm_sink_prop.01</second_id>
+              <second_id>charm_sm_src_sm_sink_prop.01</second_id>
             </elem>
           </sink_pairs>
         </NamedObject>
-        <xml_file>{{ xml_out_path }}/corr.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}.strange-smsm.hi.01.xml</xml_file>
+        <xml_file>{{ xml_out_path }}/corr.D_s.b{{ beta }}_ms{{ ms }}_mud-{{ mud }}_s{{ NL }}t{{ NT }}-{{ P }}-n_cfg_{{ cfg_id }}.D_s-smsm.hi.01.xml</xml_file>
       </elem>
 
       <elem>
@@ -1605,3 +1495,4 @@
     </InlineMeasurements>
   </Param>
 </chroma>
+

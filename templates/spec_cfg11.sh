@@ -5,7 +5,7 @@
 #SBATCH --partition=dc-gpu
 #SBATCH --gpu-bind=none
 #SBATCH --account=exotichadrons
-#SBATCH -t 0:30:00
+#SBATCH -t 06:00:00
 #SBATCH --gres=gpu:4
 
 export OPENBLAS_NUM_THREADS=16
@@ -20,10 +20,11 @@ source $formenv
 
 chroma=$CODE_DIR/install/chroma-quda-qdp-jit-double-nd4-cmake-superbblas-cuda/bin/chroma
 BASE_DIR=/p/scratch/exotichadrons/charm-tuning
-log=$BASE_DIR/test-spec-cfg{{ cfg_id }}.log
-in=$BASE_DIR/ini-multi/cnfg{{ cfg_id }}/spec_cfg{{ cfg_id }}.ini.xml
-out=$BASE_DIR/test_spec_{{ cfg_id }}.out.xml
-stdout="$BASE_DIR/test_spec_{{ cfg_id }}.out"
+log=$BASE_DIR/test-spec-cfg11.log
+in=$BASE_DIR/ini-spec/cnfg11/spec_cfg11.ini.xml
+out=$BASE_DIR/test_spec_11.out.xml
+rm $out
+stdout="$BASE_DIR/test_spec_11.out"
 
 export OPTS=" -geom 1 2 2 4"
 echo "START  "$(date "+%Y-%m-%dT%H:%M")
