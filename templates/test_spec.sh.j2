@@ -21,8 +21,8 @@ source $formenv
 chroma=$CODE_DIR/install/chroma-quda-qdp-jit-double-nd4-cmake-superbblas-cuda/bin/chroma
 BASE_DIR=/p/scratch/exotichadrons/charm-tuning
 log=$BASE_DIR/test-spec-cfg{{ cfg_id }}.log
-in=$BASE_DIR/ini-multi/cnfg{{ cfg_id }}/spec_cfg{{ cfg_id }}.ini.xml
-out=$BASE_DIR/test_spec_{{ cfg_id }}.out.xml
+in=$BASE_DIR/ini-cluster/cnfg{{ cfg_id }}/spec_cfg{{ cfg_id }}.ini.xml
+out=$BASE_DIR/xml-redirect/test_spec_{{ cfg_id }}.out.xml
 stdout="$BASE_DIR/test_spec_{{ cfg_id }}.out"
 
 export OPTS=" -geom 1 2 2 4"

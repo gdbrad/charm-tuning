@@ -126,19 +126,6 @@ class Fitter(object):
                            BaryonModel(key, t=range(t_start, t_end),
                            param_keys=param_keys, n_states=n_states))
 
-        if self.particle_statistics == 'bose-einstein':
-            for key in list(self.correlators):
-                param_keys = {
-                    'log(E0)' : 'log(E0)',
-                    'log(dE)' : 'log(dE)',
-                    'wf'      : 'wf_'+key,
-                }
-                models = np.append(models,
-                           MesonModel(key, t=range(t_start, t_end), t_period=self.t_period,
-                           param_keys=param_keys, n_states=n_states))
-        return models
-
-
     # Converts normally-distributed energy priors to log-normally-distributed priors,
     # thereby forcing each excited state to be positive
     # and larger than the previous excited state
@@ -309,58 +296,3 @@ class BaryonModel(lsqfit.MultiFitterModel):
         t = np.array(t)
         
         return np.exp(self.fcn_effective_mass(p, t)*t) * self.fitfcn(p, t)
-
-
-# Used for particles that obey bose-einstein statistics
-class MesonModel(lsqfit.MultiFitterModel):
-    def __init__(self, datatag, t, t_period, param_keys, n_states):
-        super(MesonModel, self).__init__(datatag)
-        # variables for fit
-        self.t = np.array(t)
-        self.t_period = t_period
-        self.n_states = n_states
-
-        # keys (strings) used to find the wf_overlap and energy in a parameter dictionary
-        self.param_keys = param_keys
-
-
-    def fitfcn(self, p, t=None):
-
-        if t is None:
-            t = self.t
-
-        wf = p[self.param_keys['wf']]
-        E0 = np.exp(p[self.param_keys['log(E0)']])
-        dE = np.exp(p[self.param_keys['log(dE)']])
-
-        output = wf[0] * np.cosh( E0 * (t - self.t_period/2.0) )
-        for j in range(1, self.n_states):
-            E_j = E0 + np.sum([dE[k] for k in range(j)], axis=0)
-            output = output + wf[j] * np.cosh( E_j * (t - self.t_period/2.0) )
-
-        return output
-
-
-    # The prior determines the variables that will be fit by multifitter --
-    # each entry in the prior returned by this function will be fitted
-    def buildprior(self, prior, mopt=None, extend=False):
-        return prior
-
-
-    def builddata(self, data):
-        # Extract the model's fit data from data.
-        # Key of data must match model's datatag!
-        return data[self.datatag][self.t]
-
-
-    def fcn_effective_mass(self, p, t=None):
-        if t is None:
-            t=self.t
-
-        return np.arccosh((self.fitfcn(p, t-1) + self.fitfcn(p, t+1))/(2*self.fitfcn(p, t)))
-
-
-    def fcn_effective_wf(self, p, t=None):
-        if t is None:
-            t=self.t
-        return 1 / np.cosh(self.fcn_effective_mass(p, t)*(t - self.t_period/2)) * self.fitfcn(p, t)

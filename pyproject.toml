@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "charm-tuning"
+version = "0.1.0"
+description = ""
+authors = ["Grant Bradley <g.bradley@fz-juelich.de>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+gvar = "^13.1.5"
+matplotlib = "^3.10.1"
+ipykernel = "^6.29.5"
+h5py = "^3.13.0"
+lsqfit = "^13.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

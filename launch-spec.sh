@@ -1,8 +1,8 @@
 #!/bin/bash
 conf_start=11
-conf_step=40
+conf_step=20
 conf_end=1971
-basedir="ini-multi"
+basedir="ini-cluster"
 
 for i in $(seq ${conf_start} ${conf_step} ${conf_end} ); do
   j=$(printf %02d $i)
